@@ -4,7 +4,7 @@ from model.usuario import Usuario
 
 @dataclass
 class Persona(db.Model):
-    __tablename__ = 'person'
+    __tablename__ = 'persona'
     id: int 
     first_name: str
     last_name: str
