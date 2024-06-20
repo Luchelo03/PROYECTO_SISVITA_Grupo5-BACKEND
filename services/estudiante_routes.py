@@ -83,7 +83,7 @@ def get_Estudiantes():
         } for student in students
     ]
     return jsonify(result),200
-    ##muere
+    ##muere nono
     """result = [
         {
             'id': student.id,
