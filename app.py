@@ -6,8 +6,13 @@ from services.estudiante_routes import estudiante_routes
 from services.testCompleto_routes import test_routes
 from services.diagnostico_routes import diagnostico_routes
 from config import DATABASE_CONNECTION
+from flask import Flask
+from flask_cors import CORS
+
+
 
 app = Flask(__name__)
+cors = CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_CONNECTION
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 

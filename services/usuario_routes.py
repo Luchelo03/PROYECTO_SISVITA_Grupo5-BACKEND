@@ -5,7 +5,7 @@ from schemas.usuario_schema import usuarios_schema, usuario_schema
 
 usuario_routes = Blueprint('usuario_routes', __name__)
 
-@usuario_routes.route('/usuario', methods={'GET'})
+@usuario_routes.route('/usuario/listar', methods={'GET'})
 def get_usuario():
     all_usuarios = Usuario.query.all()
     result = usuarios_schema.dump(all_usuarios)
