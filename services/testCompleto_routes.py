@@ -5,6 +5,7 @@ from model.pregunta import Pregunta
 from model.opcion import Opcion
 from model.diagnostico import Diagnostico
 from model.resultado import Result
+from datetime import datetime
 
 test_routes = Blueprint('test_routes', __name__)
 
@@ -48,12 +49,23 @@ def submit_test():
     total_score = 0
     for answer in answers:
         option = Opcion.query.filter_by(id=answer['option_id']).first()
-        total_score += option.score
+        if option:
+            total_score += option.score
 
-    diagnosis = Diagnostico.query.filter(Diagnostico.test_id == test_id, Diagnostico.min_score <= total_score, Diagnostico.max_score >= total_score).first()
+    diagnosis = Diagnostico.query.filter(
+        Diagnostico.test_id == test_id,
+        Diagnostico.min_score <= total_score,
+        Diagnostico.max_score >= total_score
+    ).first()
 
     if diagnosis:
-        new_result = Result(codigo_entidad=user_id, test_id=test_id, total_score=total_score, diagnosis_id=diagnosis.id)
+        new_result = Result(
+            codigo_entidad=user_id,
+            test_id=test_id,
+            total_score=total_score,
+            diagnosis_id=diagnosis.id,
+            created_at=datetime.now()  # Asegúrate de establecer la fecha y hora actuales
+        )
         db.session.add(new_result)
         db.session.commit()
 

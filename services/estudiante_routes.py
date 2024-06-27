@@ -181,3 +181,36 @@ def get_student_by_code():
         return make_response(jsonify({'message': 'Estudiante no encontrado'}), 404)
     
     return make_response(jsonify({'message': 'Coloque el código del estudiante'}), 400)
+
+@estudiante_routes.route('/estudiante/buscarPorEmail', methods=['GET'])
+def get_student_by_email():
+    email = request.json.get('email')
+    if not email:
+        return jsonify({'message': 'Email is required'}), 400
+
+    user = Usuario.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    person = Persona.query.filter_by(user_id=user.id).first()
+    if not person:
+        return jsonify({'message': 'Person not found'}), 406
+
+    student = Estudiante.query.filter_by(person_id=person.id).first()
+    if not student:
+        return jsonify({'message': 'Student not found'}), 407
+    
+
+    result = {}
+    result["data"]=[
+        {
+        'id': student.id,
+        'first_name': student.person.first_name,
+        'last_name': student.person.last_name,
+        'email': user.email,
+        'codigo_estudiante': student.codigo_estudiante,
+        'facultad': student.facultad
+        }
+    ]
+
+    return jsonify(result), 200
