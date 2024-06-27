@@ -12,7 +12,7 @@ from flask_cors import CORS
 
 
 app = Flask(__name__)
-cors = CORS(app)
+cors = CORS(app, resources={r"/*": {"origins": "http://localhost:4200"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_CONNECTION
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 

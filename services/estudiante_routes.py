@@ -49,6 +49,13 @@ def create_Estudiantes():
         new_student = Estudiante(person_id=new_person.id, codigo_estudiante=code, facultad=facultad)
         db.session.add(new_student)
         db.session.commit()
+        
+        data={
+            'message': 'Estudiante creado con exito',
+            'status': 200,
+            'estudiante':estudiante_schema.dump(new_student)
+        }
+        return make_response(jsonify(data),200)
 
         return jsonify({
             'message': 'Nuevo estudiante creado exitosamente',
@@ -64,7 +71,7 @@ def create_Estudiantes():
         return jsonify({'message': 'Error al crear el estudiante, posiblemente el código o el email ya existen'}), 400
     except Exception as e:
         db.session.rollback()
-        return jsonify({'message': f'Error al crear el estudiante: {str(e)}'}), 500
+        return jsonify({'message': f'Error al crear el estudiantee: {str(e)}'}), 500
     
 @estudiante_routes.route('/estudiante/listar', methods=['GET'])
 def get_Estudiantes():
