@@ -74,9 +74,13 @@ def get_questions():
     if not test:
         return jsonify({'message': 'Test not found'}), 404
 
-    questions = []
-    for question in test.questions:
-        options = [{'id': option.id, 'text': option.option_text, 'score': option.score} for option in question.options]
-        questions.append({'id': question.id, 'text': question.question_text, 'options': options})
 
-    return jsonify({'test_name': test.test_name, 'questions': questions})
+    questions = Pregunta.query.filter_by(test_id=test.id).all()
+    question_list = []
+
+    for question in questions:
+        options = Opcion.query.filter_by(question_id=question.id).all()
+        option_list = [{'id': option.id, 'text': option.option_text, 'score': option.score} for option in options]
+        question_list.append({'id': question.id, 'text': question.question_text, 'options': option_list})
+
+    return jsonify({'test_name': test.test_name, 'questions': question_list})
