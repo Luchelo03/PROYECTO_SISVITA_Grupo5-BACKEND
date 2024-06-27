@@ -3,6 +3,8 @@ from utils.db import db
 from model.test import Test
 from model.pregunta import Pregunta
 from model.opcion import Opcion
+from model.diagnostico import Diagnostico
+from model.resultado import Result
 
 test_routes = Blueprint('test_routes', __name__)
 
@@ -35,3 +37,46 @@ def create_test():
             'test_name': new_test.test_name
         }
     }), 201)
+
+@test_routes.route('/test/submit_test', methods=['POST'])
+def submit_test():
+    data = request.get_json()
+    user_id = data['user_id']
+    test_id = data['test_id']
+    answers = data['answers']
+
+    total_score = 0
+    for answer in answers:
+        option = Opcion.query.filter_by(id=answer['option_id']).first()
+        total_score += option.score
+
+    diagnosis = Diagnostico.query.filter(Diagnostico.test_id == test_id, Diagnostico.min_score <= total_score, Diagnostico.max_score >= total_score).first()
+
+    if diagnosis:
+        new_result = Result(codigo_entidad=user_id, test_id=test_id, total_score=total_score, diagnosis_id=diagnosis.id)
+        db.session.add(new_result)
+        db.session.commit()
+
+        return jsonify({
+            'total_score': total_score,
+            'diagnosis': diagnosis.diagnosis_text
+        }), 200
+    else:
+        return jsonify({
+            'message': 'Diagnosis not found for the given score'
+        }), 400
+        
+@test_routes.route('/test/get_questions', methods=['GET'])
+def get_questions():
+    test_id = 1  # Asumiendo que solo hay un test o especifica el test_id necesario
+    test = Test.query.filter_by(id=test_id).first()
+
+    if not test:
+        return jsonify({'message': 'Test not found'}), 404
+
+    questions = []
+    for question in test.questions:
+        options = [{'id': option.id, 'text': option.option_text, 'score': option.score} for option in question.options]
+        questions.append({'id': question.id, 'text': question.question_text, 'options': options})
+
+    return jsonify({'test_name': test.test_name, 'questions': questions})

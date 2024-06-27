@@ -1,18 +1,25 @@
+import bcrypt
 from flask import Blueprint, request, jsonify, make_response
 from utils.db import db
 from model.usuario import Usuario
+from model.codigos_unicos import Codigos
+from model.persona import Persona
+from model.estudiante import Estudiante
 from schemas.usuario_schema import usuarios_schema, usuario_schema
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
 
 usuario_routes = Blueprint('usuario_routes', __name__)
 
-@usuario_routes.route('usuario/login', methods=['POST'])
+@usuario_routes.route('/usuario/login', methods=['POST'])
 def login():
     data = request.get_json()
     email = data.get('email')
-    password = data.get('password')
+    password = data.get('password').encode('utf-')
     
     usuario = Usuario.query.filter_by(email=email).first()
+    person = Persona.query.filter_by(user_id=usuario.id).first()
+    student = Estudiante.query.filter_by(person_id=person.id).first()
+    codigo = Codigos.query.filter_by(code=student.codigo_estudiante).first()
     
     if not usuario:
         data={
@@ -21,8 +28,7 @@ def login():
         }
         return make_response(jsonify(data),404)
     
-    hash_password=Usuario.hash_password(password)
-    if not hash_password == password:
+    if not usuario and bcrypt.checkpw(password, usuario.password.encode('utf-8')):
         data={
             'message': 'Contraseña incorrecta',
             'status': 400
@@ -31,8 +37,10 @@ def login():
     
     data={
         'message': 'Inició de sesión exitoso',
-        'access_token': create_access_token(identity=)
+        'access_token': create_access_token(identity=codigo.code, additional_claims={"id_usuario":usuario.id}),
+        'refresh_token': create_refresh_token(identity=codigo.code),
     }
+    return make_response(jsonify(data), 200)
 
 @usuario_routes.route('/usuario/listar', methods={'GET'})
 def get_usuario():

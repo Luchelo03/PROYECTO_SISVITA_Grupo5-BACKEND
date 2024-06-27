@@ -8,13 +8,22 @@ from services.diagnostico_routes import diagnostico_routes
 from config import DATABASE_CONNECTION
 from flask import Flask
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
+from datetime import timedelta
 
 
 
 app = Flask(__name__)
+
+app.config['SECRET_KEY']='97017582b69247b8a8a88491e108c1ca'
+app.config['JWT_SECRET_KEY']='9aa6fe2ac33742958ef600ffea2230fc'
+app.config['JWT_ACCESS_TOKEN_EXPIRES']=timedelta(hours=2)
+app.config['JWT_REFRESH_TOKEN_EXPIRES']=timedelta(days=1)
+
+jwt=JWTManager(app)
+
 cors = CORS(app, resources={r"/*": {"origins": "http://localhost:4200"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_CONNECTION
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 app.register_blueprint(usuario_routes)
