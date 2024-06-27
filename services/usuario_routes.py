@@ -2,8 +2,37 @@ from flask import Blueprint, request, jsonify, make_response
 from utils.db import db
 from model.usuario import Usuario
 from schemas.usuario_schema import usuarios_schema, usuario_schema
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
 
 usuario_routes = Blueprint('usuario_routes', __name__)
+
+@usuario_routes.route('usuario/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    
+    usuario = Usuario.query.filter_by(email=email).first()
+    
+    if not usuario:
+        data={
+            'message': 'Usuario no encontrado',
+            'status': 404
+        }
+        return make_response(jsonify(data),404)
+    
+    hash_password=Usuario.hash_password(password)
+    if not hash_password == password:
+        data={
+            'message': 'Contraseña incorrecta',
+            'status': 400
+        }
+        return make_response(jsonify(data), 400)
+    
+    data={
+        'message': 'Inició de sesión exitoso',
+        'access_token': create_access_token(identity=)
+    }
 
 @usuario_routes.route('/usuario/listar', methods={'GET'})
 def get_usuario():
