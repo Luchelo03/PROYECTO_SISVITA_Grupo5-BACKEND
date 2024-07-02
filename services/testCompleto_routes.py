@@ -57,7 +57,11 @@ def submit_test():
         option = Opcion.query.filter_by(id=option_id).first()
         if option:
             total_score += option.score
-
+        
+    #para el test de zung
+    total_score=(total_score/80)*100
+    print("puntuacion final:",total_score)
+    
     diagnosis = Diagnostico.query.filter(
         Diagnostico.test_id == test_id,
         Diagnostico.min_score <= total_score,
