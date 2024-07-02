@@ -184,7 +184,7 @@ def get_student_by_code():
 
 @estudiante_routes.route('/estudiante/buscarPorEmail', methods=['GET'])
 def get_student_by_email():
-    email = request.json.get('email')
+    email = request.args.get('email')
     if not email:
         return jsonify({'message': 'Email is required'}), 400
 
@@ -208,9 +208,11 @@ def get_student_by_email():
         'first_name': student.person.first_name,
         'last_name': student.person.last_name,
         'email': user.email,
-        'codigo_estudiante': student.codigo_estudiante,
-        'facultad': student.facultad
+        'student_code': student.codigo_estudiante,
+        'facultad': student.facultad,
+        'rol': student.person.role,
         }
     ]
 
     return jsonify(result), 200
+

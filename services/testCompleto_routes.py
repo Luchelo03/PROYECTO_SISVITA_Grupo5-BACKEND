@@ -1,3 +1,4 @@
+import pprint
 from flask import Blueprint, request, jsonify, make_response
 from utils.db import db
 from model.test import Test
@@ -42,13 +43,18 @@ def create_test():
 @test_routes.route('/test/submit_test', methods=['POST'])
 def submit_test():
     data = request.get_json()
-    user_id = data['user_id']
+    codigo_entidad = data['codigo_entidad']
     test_id = data['test_id']
     answers = data['answers']
+    
+    #codigo_entidad = request.get_json('codigo_entidad')
+    #test_id = request.get_json('test_id')
+    #answers = request.get_json('answers')
 
     total_score = 0
     for answer in answers:
-        option = Opcion.query.filter_by(id=answer['option_id']).first()
+        option_id = int(answer['option_id'])
+        option = Opcion.query.filter_by(id=option_id).first()
         if option:
             total_score += option.score
 
@@ -60,7 +66,7 @@ def submit_test():
 
     if diagnosis:
         new_result = Result(
-            codigo_entidad=user_id,
+            codigo_entidad=codigo_entidad,
             test_id=test_id,
             total_score=total_score,
             diagnosis_id=diagnosis.id,

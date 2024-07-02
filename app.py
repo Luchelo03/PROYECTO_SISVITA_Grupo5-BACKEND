@@ -5,6 +5,7 @@ from services.persona_routes import persona_routes
 from services.estudiante_routes import estudiante_routes
 from services.testCompleto_routes import test_routes
 from services.diagnostico_routes import diagnostico_routes
+from services.resultado_routes import resultados_routes
 from config import DATABASE_CONNECTION
 from flask import Flask
 from flask_cors import CORS
@@ -31,6 +32,7 @@ app.register_blueprint(persona_routes)
 app.register_blueprint(estudiante_routes)
 app.register_blueprint(test_routes)
 app.register_blueprint(diagnostico_routes)
+app.register_blueprint(resultados_routes)
 
 with app.app_context():
     db.create_all()
