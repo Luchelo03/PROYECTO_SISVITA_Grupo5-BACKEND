@@ -122,11 +122,11 @@ def submit_test():
         # Determinar el semáforo basado en el diagnóstico
         semaforo = None
         if diagnosis.diagnosis_text == 'Dentro de los límites normales. No hay ansiedad presente.':
-            semaforo = Semaforo.query.filter_by(color='rojo').first()
+            semaforo = Semaforo.query.filter_by(color='verde').first()
         elif diagnosis.diagnosis_text == '"Presencia de ansiedad mínima moderada."':
             semaforo = Semaforo.query.filter_by(color='ambar').first()
         elif diagnosis.diagnosis_text in ['Presencia de ansiedad en grado máximo.', 'Presencia de ansiedad marcada a severa.']:
-            semaforo = Semaforo.query.filter_by(color='verde').first()
+            semaforo = Semaforo.query.filter_by(color='rojo').first()
 
         if not semaforo:
             return jsonify({'message': 'Semaforo no hallado para el diagnostico'}), 400
