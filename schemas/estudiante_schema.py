@@ -6,7 +6,8 @@ from schemas.codigos_schema import CodigoSchema
 class EstudianteSchema(ma.Schema):
     class Meta:
         model = Estudiante
-        fields = ('id','person_id','codigo_estudiante','facultad','persona','codigo')
+        fields = ('id','person_id','codigo_estudiante','facultad',
+                  'persona','codigo')
         
     persona = ma.Nested(PersonaSchema) 
     codigo = ma.Nested(CodigoSchema)

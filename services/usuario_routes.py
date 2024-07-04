@@ -5,6 +5,7 @@ from model.usuario import Usuario
 from model.codigos_unicos import Codigos
 from model.persona import Persona
 from model.estudiante import Estudiante
+from model.especialista import Especialista
 from schemas.usuario_schema import usuarios_schema, usuario_schema
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
 
@@ -18,8 +19,16 @@ def login():
     
     usuario = Usuario.query.filter_by(email=email).first()
     person = Persona.query.filter_by(user_id=usuario.id).first()
-    student = Estudiante.query.filter_by(person_id=person.id).first()
-    codigo = Codigos.query.filter_by(code=student.codigo_estudiante).first()
+    
+    role = person.role
+    
+    if role=='Estudiante':
+        student = Estudiante.query.filter_by(person_id=person.id).first()
+        codigo = Codigos.query.filter_by(code=student.codigo_estudiante).first()
+    elif role=='Especialista':
+        specialist= Especialista.query.filter_by(person_id=person.id).first()
+        codigo = Codigos.query.filter_by(code=specialist.codigo_especialista).first()
+    
     
     if not usuario:
         data={
@@ -39,6 +48,7 @@ def login():
         'message': 'Inició de sesión exitoso',
         'access_token': create_access_token(identity=codigo.code, additional_claims={"id_usuario":usuario.id}),
         'refresh_token': create_refresh_token(identity=codigo.code),
+        'role': role
     }
     return make_response(jsonify(data), 200)
 

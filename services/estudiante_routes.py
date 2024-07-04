@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 
 estudiante_routes = Blueprint('estudiante_routes', __name__)
 
+"""
 @estudiante_routes.route('/estudiante/add', methods=['POST'])
 def create_Estudiantes():
     try:
@@ -56,22 +57,69 @@ def create_Estudiantes():
             'estudiante':estudiante_schema.dump(new_student)
         }
         return make_response(jsonify(data),200)
-
-        return jsonify({
-            'message': 'Nuevo estudiante creado exitosamente',
-            'student': {
-                'id': new_student.id,
-                'person_id': new_student.person_id,
-                'codigo_estudiante': new_student.codigo_estudiante,
-                'facultad': new_student.facultad
-            }
-        }), 201
     except IntegrityError:
         db.session.rollback()
         return jsonify({'message': 'Error al crear el estudiante, posiblemente el código o el email ya existen'}), 400
     except Exception as e:
         db.session.rollback()
-        return jsonify({'message': f'Error al crear el estudiantee: {str(e)}'}), 500
+        return jsonify({'message': f'Error al crear el estudiantee: {str(e)}'}), 500 """
+
+@estudiante_routes.route('/estudiante/add', methods=['POST'])
+def create_Estudiantes():
+    try:
+        # Extraer datos del JSON
+        email = request.json['email']
+        password = request.json['password']
+        first_name = request.json['first_name']
+        last_name = request.json['last_name']
+        facultad = request.json['facultad']
+        code = request.json['codigo_estudiante']
+        cell_phone = request.json['cell_phone']  # Nuevo campo: número de celular
+        department_id = request.json['department_id']  # Nuevo campo: ID de departamento
+        province_id = request.json['province_id']  # Nuevo campo: ID de provincia
+        district_id = request.json['district_id']  # Nuevo campo: ID de distrito
+
+        # Verificar si el email ya existe
+        if Usuario.query.filter_by(email=email).first():
+            return jsonify({'message': 'El email ya está registrado'}), 400
+
+        # Crear un nuevo usuario
+        new_user = Usuario(email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        # Crear una nueva persona asociada al usuario
+        new_person = Persona(first_name=first_name, last_name=last_name, role='Estudiante', user_id=new_user.id, 
+                             cell_phone=cell_phone, department_id=department_id, province_id=province_id, 
+                             district_id=district_id)
+        db.session.add(new_person)
+        db.session.commit()
+
+        # Crear una nueva entrada en unique_codes
+        new_code = Codigos(code=code)
+        db.session.add(new_code)
+        db.session.commit()
+
+        # Crear un nuevo estudiante
+        new_student = Estudiante(person_id=new_person.id, codigo_estudiante=code, facultad=facultad)
+        db.session.add(new_student)
+        db.session.commit()
+        
+        data = {
+            'message': 'Estudiante creado con éxito',
+            'status': 200,
+            'estudiante': estudiante_schema.dump(new_student)
+        }
+        return make_response(jsonify(data), 200)
+    
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'message': 'Error al crear el estudiante, posiblemente el código o el email ya existen'}), 400
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error al crear el estudiante: {str(e)}'}), 500
+
     
 @estudiante_routes.route('/estudiante/listar', methods=['GET'])
 def get_Estudiantes():
