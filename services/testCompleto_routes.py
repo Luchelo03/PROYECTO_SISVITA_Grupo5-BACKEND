@@ -6,6 +6,7 @@ from model.pregunta import Pregunta
 from model.opcion import Opcion
 from model.diagnostico import Diagnostico
 from model.resultado import Result
+from model.semaforo import Semaforo
 from datetime import datetime
 
 test_routes = Blueprint('test_routes', __name__)
@@ -40,6 +41,7 @@ def create_test():
         }
     }), 201)
 
+"""
 @test_routes.route('/test/submit_test', methods=['POST'])
 def submit_test():
     data = request.get_json()
@@ -85,8 +87,71 @@ def submit_test():
         }), 200
     else:
         return jsonify({
-            'message': 'Diagnosis not found for the given score'
-        }), 400
+            'message': 'Diagnostico not found for the given score'
+        }), 400  """
+        
+@test_routes.route('/test/submit_test', methods=['POST'])
+def submit_test():
+    try:
+        data = request.get_json()
+        codigo_entidad = data['codigo_entidad']
+        test_id = data['test_id']
+        answers = data['answers']
+
+        total_score = 0
+        for answer in answers:
+            option_id = int(answer['option_id'])
+            option = Opcion.query.filter_by(id=option_id).first()
+            if option:
+                total_score += option.score
+        
+        # Calcular la puntuación total para el test de Zung
+        total_score = (total_score / 80) * 100
+        print("Puntuación final:", total_score)
+        
+        # Obtener el diagnóstico basado en la puntuación
+        diagnosis = Diagnostico.query.filter(
+            Diagnostico.test_id == test_id,
+            Diagnostico.min_score <= total_score,
+            Diagnostico.max_score >= total_score
+        ).first()
+
+        if not diagnosis:
+            return jsonify({'message': 'Diagnostico no hallado para el score obtenido'}), 400
+
+        # Determinar el semáforo basado en el diagnóstico
+        semaforo = None
+        if diagnosis.diagnosis_text == 'Dentro de los límites normales. No hay ansiedad presente.':
+            semaforo = Semaforo.query.filter_by(color='rojo').first()
+        elif diagnosis.diagnosis_text == '"Presencia de ansiedad mínima moderada."':
+            semaforo = Semaforo.query.filter_by(color='ambar').first()
+        elif diagnosis.diagnosis_text in ['Presencia de ansiedad en grado máximo.', 'Presencia de ansiedad marcada a severa.']:
+            semaforo = Semaforo.query.filter_by(color='verde').first()
+
+        if not semaforo:
+            return jsonify({'message': 'Semaforo no hallado para el diagnostico'}), 400
+
+        # Crear un nuevo resultado
+        new_result = Result(
+            codigo_entidad=codigo_entidad,
+            test_id=test_id,
+            total_score=total_score,
+            diagnosis_id=diagnosis.id,
+            semaforo_id=semaforo.id,
+            created_at=datetime.now()  # Establecer la fecha y hora actuales
+        )
+        db.session.add(new_result)
+        db.session.commit()
+
+        return jsonify({
+            'total_score': total_score,
+            'diagnosis': diagnosis.diagnosis_text,
+            'semaforo': semaforo.color
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error al procesar el test: {str(e)}'}), 500
+
         
 @test_routes.route('/test/get_questions', methods=['GET'])
 def get_questions():

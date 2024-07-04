@@ -66,3 +66,38 @@ def create_Especialista():
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Error al crear el especialista: {str(e)}'}), 500
+
+
+@especialista_routes.route('/especialista/buscarPorEmail', methods=['GET'])
+def get_specialist_by_email():
+    email = request.args.get('email')
+    if not email:
+        return jsonify({'message': 'Email is required'}), 400
+
+    user = Usuario.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    person = Persona.query.filter_by(user_id=user.id).first()
+    if not person:
+        return jsonify({'message': 'Person not found'}), 406
+
+    specialist = Especialista.query.filter_by(person_id=person.id).first()
+    if not specialist:
+        return jsonify({'message': 'Specialist not found'}), 407
+    
+
+    result = {}
+    result["data"]=[
+        {
+        'id': specialist.id,
+        'first_name': specialist.person.first_name,
+        'last_name': specialist.person.last_name,
+        'email': user.email,
+        'specialist_code': specialist.codigo_especialista,
+        'specialty': specialist.specialty,
+        'rol': specialist.person.role,
+        }
+    ]
+
+    return jsonify(result), 200
