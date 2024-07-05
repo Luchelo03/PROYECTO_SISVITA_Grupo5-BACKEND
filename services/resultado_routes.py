@@ -5,6 +5,9 @@ from model.diagnostico import Diagnostico
 from model.estudiante import Estudiante
 from model.persona import Persona
 from model.semaforo import Semaforo
+from model.usuario import Usuario
+from model.distrito import Distrito
+from utils.db import db
 
 resultados_routes = Blueprint('resultados_routes', __name__)
 
@@ -32,24 +35,15 @@ def get_resultados_by_codigo_entidad(codigo_entidad):
     return jsonify(resultados_data), 200
 
 @resultados_routes.route('/resultados/all', methods=['GET'])
-def get_all_resultados():
-    resultados = Result.query.all()
+def get_resultados_by_codigo_entidad():
+    resultados = Result.query.filter_by().all()
     if not resultados:
-        return jsonify({'message': 'No hay resultados para ningún estudiante'}), 404
+        return jsonify({'message': 'No hay resultados para este estudiante'}), 404
 
     resultados_data = []
     for resultado in resultados:
         test = Test.query.filter_by(id=resultado.test_id).first()
         diagnostico = Diagnostico.query.filter_by(id=resultado.diagnosis_id).first()
-        estudiante = Estudiante.query.join(Persona).filter_by(id=resultado.person_id).first()
-        persona = Persona.query.filter_by(id=resultado.person_id).first()
-
-        if estudiante:
-            semaforo = Semaforo.query.filter_by(id=estudiante.semaforo_id).first()
-            distrito = persona.district
-        else:
-            semaforo = None
-            distrito = None
 
         resultados_data.append({
             'id': resultado.id,
@@ -58,9 +52,7 @@ def get_all_resultados():
             'test_id': resultado.test_id,
             'test_name': test.test_name if test else 'Test no encontrado',
             'diagnosis_id': resultado.diagnosis_id,
-            'diagnosis_text': diagnostico.diagnosis_text if diagnostico else 'Diagnóstico no encontrado',
-            'semaforo': semaforo.semaforo_name if semaforo else 'Semaforo no encontrado',
-            'distrito': distrito
+            'diagnosis_text': diagnostico.diagnosis_text if diagnostico else 'Diagnóstico no encontrado'
         })
 
     return jsonify(resultados_data), 200
