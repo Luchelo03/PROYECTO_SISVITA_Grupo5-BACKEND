@@ -34,6 +34,8 @@ def get_resultados_by_codigo_entidad(codigo_entidad):
 
     return jsonify(resultados_data), 200
 
+
+"""
 @resultados_routes.route('/resultados/all', methods=['GET'])
 def get_resultados_by_codigo_entidad():
     resultados = Result.query.filter_by().all()
@@ -55,4 +57,4 @@ def get_resultados_by_codigo_entidad():
             'diagnosis_text': diagnostico.diagnosis_text if diagnostico else 'Diagnóstico no encontrado'
         })
 
-    return jsonify(resultados_data), 200
+    return jsonify(resultados_data), 200"""
